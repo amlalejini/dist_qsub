@@ -17,7 +17,6 @@ except:
     print ("Could not open run_list file.")
     exit(-1)
 
-
 dest_dir = ""
 
 for line in run_list:
