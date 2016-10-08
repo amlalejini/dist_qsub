@@ -33,7 +33,7 @@ parser.add_option("-l", "--run_list", action = "store", dest = "rl_file", defaul
 run_list = open("run_list_resubmit", "wb")
 extinct = open("extinct", "wb")
 
-default_header = "set description stepping_stones\nset email default@msu.edu\nset email_when final\nset class_pref 150\nset walltime 4\nset mem_request 4\nset config_dir configs\nset dest_dir " + os.getcwd() + "\n"
+default_header = "set description avida_experiment\nset email default@msu.edu\nset email_when final\nset walltime 4\nset mem_request 4\nset config_dir configs\nset dest_dir " + os.getcwd() + "\n"
 header = None
 if options.rl_file != None:
     try:
@@ -41,6 +41,9 @@ if options.rl_file != None:
     except:
         print("Could not build header from provided run_list file. Using default.")
         header = default_header
+
+if not header:
+    header = default_header
 
 if options.cpr == 1:
     header += "set cpr 1\n"
@@ -62,7 +65,7 @@ for run in run_logs:
     with open(run) as logfile:
 
         end = logfile.readlines()[-1].split()
-        if len(end) < 6:
+        if len(end) < 6 or end[0] != "UD:":
             print(end)
             pop = 1 #all that matters is it's not 0
             ud = 0
@@ -96,14 +99,22 @@ for run in run_logs:
 
             conditions[condition]["command"] = command
 
-
+        
         if (options.generations == "" and ud != options.updates) or (options.generations != "" and float(gen) < float(options.generations)): 
             if pop == "0":
                 extinct_list.append(rep)
                 continue
         
             if os.path.exists(rep+"/checkpoint_safe.blcr") and options.cpr:
-                shutil.copy(rep+"/checkpoint_safe.blcr", rep+"/checkpoint.blcr")
+                try:
+                    shutil.copy(rep+"/checkpoint_safe.blcr", rep+"/checkpoint.blcr")
+                except IOError as e: 
+                    '''Note: Technically we should check if e.errno==EACCES
+                    or switch to py3 to use PermissionError'''
+                    print "Not resubmitting", rep, "because don't have permission. ", e
+                    not_resubmitted.append(rep)
+                    continue
+                    
             elif options.cpr:
                 print "Not resubmitting", rep, "because there's no checkpoint."
                 not_resubmitted.append(rep)
