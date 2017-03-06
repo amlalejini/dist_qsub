@@ -36,4 +36,3 @@ set dest_dir /mnt/home/dolsonem/dist_qsub/test
 
 #Test G
 #92 TestRunG ~/avida/cbuild/work/avida -s $seed -set FORCED_MATE_PREFERENCE 0 -set EVENT_FILE events_I.cfg -set ENVIRONMENT_FILE environment_V_*.cfg -set DATA_DIR data__C_step1
-
